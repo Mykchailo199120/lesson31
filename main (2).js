@@ -75,35 +75,39 @@ getData('/posts/1')
  * - Належне управління помилками та відповідями від API.
  *
 */
-
 async function postData(segment, data) {
   try {
-     const response = await fetch(`https://jsonplaceholder.typicode.com` + segment, {
-       method: 'POST',
-       headers: {
-         'Content-Type': 'application/json'
-       },
-       body: JSON.stringify(data),
-     });
-
-     if (response.status === 200) {
-       const data = await response.json()
-
-       console.log(data)
-     }else {
-       throw new Error(`Помилка: ${response.status} ${response.statusText}`);
-     }
+    const response = await fetch(`https://jsonplaceholder.typicode.com${segment}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
 
+    console.log('Sending request to:', `https://jsonplaceholder.typicode.com${segment}`);
 
+
+    if (response.ok) {
+      const jsonResponse = await response.json();
+      console.log('Success:', jsonResponse);
+      return jsonResponse;
+    } else {
+      const errorText = await response.text();
+      console.error('Error:', response.status, errorText);
+      return `Error: ${response.status} - ${errorText}`;
+    }
   } catch (error) {
-    console.error('помилка', error.message)
-    return 'запит не вдався: ' + error.message;
+    console.error('Request failed', error);
+    return 'Request failed';
   }
 }
 
-postData('/posts')
 
+postData('/posts', { title: 'foo', body: 'bar', userId: 1 })
+    .then(data => console.log(data))
+    .catch(error => console.error('Unhandled error:', error));
 /*
  *
  * #3
@@ -249,36 +253,31 @@ patchData(1, { title: 'Updated Title', body: 'Updated Body', userId: 1 });
  *
  */
 
-export async function deleteData(id) {
-  try {
 
+async function deleteData(id) {
+  try {
     const response = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, {
       method: 'DELETE',
     });
 
 
-    if (response.status === 200 ) {
-
-      const responseBody = await response.text();
-
-      const jsonResponse = responseBody ? JSON.parse(responseBody) : null;
-
-
-      console.log(`Post with id ${id} has been successfully deleted. Status: ${response.status}`, jsonResponse);
-      return jsonResponse;
+    if (response.ok) {
+      console.log(`Post with id ${id} has been successfully deleted.`);
+      return true;
     } else {
-
       console.error(`Failed to delete post with id ${id}. Status: ${response.status}`);
       return response.status;
     }
   } catch (error) {
-
     console.error(`Error during deletion: ${error.message}`);
     return error.message;
   }
 }
 
-deleteData('/posts')
+
+deleteData(1)
+    .then(result => console.log('Result:', result))
+    .catch(error => console.error('Unhandled error:', error));
 
 
 
